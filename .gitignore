@@ -25,3 +25,7 @@ replay_pid*
 
 # Intellij Idea files
 .idea/
+
+# maven wrapper files
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
