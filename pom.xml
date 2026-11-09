@@ -5,9 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.practicum.microbank</groupId>
-    <artifactId>practicum-bank</artifactId>
+    <artifactId>practicum-bank-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>Bank Microservices Parent</name>
+    <packaging>pom</packaging>
+    <name>Практикум банк родитель</name>
 
     <modules>
 <!--        <module>api-gateway</module>-->
@@ -15,7 +16,7 @@
 <!--        <module>cash-service</module>-->
 <!--        <module>transfer-service</module>-->
 <!--        <module>notifications-service</module>-->
-        <module>front-ui</module>
+        <module>bank-ui</module>
     </modules>
 
     <properties>
@@ -55,6 +56,51 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
                     <version>${spring-boot.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                                <goal>build-info</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.13.0</version>
+                    <configuration>
+                        <release>${java.version}</release>
+                        <parameters>true</parameters>
+                    </configuration>
+                </plugin>
+                <!-- ИИ помощь-->
+                <!-- Ресурсы: фильтрация @..@ и защита бинарников -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.3.1</version>
+                    <configuration>
+                        <propertiesEncoding>ISO-8859-1</propertiesEncoding>
+                        <delimiters>
+                            <delimiter>@</delimiter>
+                        </delimiters>
+                        <useDefaultDelimiters>false</useDefaultDelimiters>
+                        <nonFilteredFileExtensions>
+                            <nonFilteredFileExtension>pdf</nonFilteredFileExtension>
+                            <nonFilteredFileExtension>swf</nonFilteredFileExtension>
+                            <nonFilteredFileExtension>jpeg</nonFilteredFileExtension>
+                            <nonFilteredFileExtension>jpg</nonFilteredFileExtension>
+                            <nonFilteredFileExtension>png</nonFilteredFileExtension>
+                        </nonFilteredFileExtensions>
+                    </configuration>
+                </plugin>
+                <!-- ИИ помощь-->
+                <!-- Тесты -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.5.2</version>
                 </plugin>
             </plugins>
         </pluginManagement>
