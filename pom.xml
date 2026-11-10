@@ -8,11 +8,11 @@
     <artifactId>practicum-bank-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Практикум банк родитель</name>
-
+    <name>practicum-bank-parent</name>
+    <description>Практикум банк родитель</description>
     <modules>
         <module>bank-gateway</module>
-<!--        <module>accounts-service</module>-->
+        <module>accounts-service</module>
 <!--        <module>cash-service</module>-->
 <!--        <module>transfer-service</module>-->
 <!--        <module>notifications-service</module>-->
