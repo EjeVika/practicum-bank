@@ -11,7 +11,7 @@
     <name>Практикум банк родитель</name>
 
     <modules>
-<!--        <module>api-gateway</module>-->
+        <module>bank-gateway</module>
 <!--        <module>accounts-service</module>-->
 <!--        <module>cash-service</module>-->
 <!--        <module>transfer-service</module>-->

@@ -32,3 +32,4 @@ replay_pid*
 
 # target in submodules
 bank-ui/target/*
+bank-gateway/target/*
