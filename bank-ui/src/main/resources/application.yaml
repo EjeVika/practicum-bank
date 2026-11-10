@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: practicum-bank-ui
+server:
+  port: 8084

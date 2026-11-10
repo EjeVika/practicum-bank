@@ -29,3 +29,6 @@ replay_pid*
 # maven wrapper files
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
+
+# target in submodules
+bank-ui/target/*
