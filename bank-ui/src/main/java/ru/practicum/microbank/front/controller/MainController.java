@@ -1,15 +1,21 @@
 package ru.practicum.microbank.front.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import ru.practicum.microbank.front.client.AccountsClient;
 import ru.practicum.microbank.front.controller.dto.CashAction;
 import ru.practicum.microbank.front.controller.stub.AccountStub;
+import ru.practicum.microbank.front.model.AccountInfo;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Контроллер main.html.
@@ -34,6 +40,14 @@ import java.time.LocalDate;
  */
 @Controller
 public class MainController {
+
+    private final AccountsClient accountsClient;
+
+    public MainController(AccountsClient accountsClient) {
+        this.accountsClient = accountsClient;
+    }
+
+
     // TODO: Удалить заглушку, так как используется только для ознакомительных целей
     @Autowired
     private AccountStub accountStub;
@@ -44,7 +58,7 @@ public class MainController {
      */
     @GetMapping
     public String index() {
-        return "redirect:/account";
+        return "redirect:/api/v1/accounts";
     }
 
     /**
@@ -54,10 +68,20 @@ public class MainController {
      * 2. Заполнить модель main.html полученными из ответа данными
      * 3. Текущего пользователя можно получить из контекста Security
      */
-    @GetMapping("/account")
-    public String getAccount(Model model) {
-        // TODO: Заменить на то, что описано в комментарии к методу
-        accountStub.fillModel(model, null, null);
+    @GetMapping("/api/v1/accounts")
+    public String getAccount(Model model, @AuthenticationPrincipal OidcUser oidcUser) {
+
+        AccountInfo accountInfo = accountsClient.getAccountInfo(oidcUser.getName());
+        model.addAttribute("name", accountInfo.name());
+        model.addAttribute("birthdate", accountInfo.birthDay().format(DateTimeFormatter.ISO_DATE));
+        model.addAttribute("sum", accountInfo.balance());
+        model.addAttribute("accounts", accountStub.getAccounts());
+        model.addAttribute("errors", null);
+        model.addAttribute("info", null);
+
+        if (oidcUser != null) {
+            model.addAttribute("username", oidcUser.getPreferredUsername());
+        }
 
         return "main";
     }

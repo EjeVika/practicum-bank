@@ -25,8 +25,13 @@ public class AccountStub {
 
     private final List<AccountDto> accounts = List.of(
             new AccountDto("petrov", "Петров Петр"),
-            new AccountDto("sidorov", "Сидоров Сидор")
+            new AccountDto("sidorov", "Сидоров Сидор"),
+            new AccountDto("fedorov", "Федоров Федор")
     );
+
+    public List<AccountDto> getAccounts() {
+        return accounts;
+    }
 
     public String getByLogin(String login) {
         return accounts.stream()
