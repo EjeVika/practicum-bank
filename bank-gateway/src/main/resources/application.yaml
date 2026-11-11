@@ -30,3 +30,6 @@ spring:
                 # Он берёт JWT и добавляет заголовок Authorization к исходящему запросу
                 - name: JwtTokenRelay
                 - StripPrefix=2
+logging:
+  level:
+    root: DEBUG

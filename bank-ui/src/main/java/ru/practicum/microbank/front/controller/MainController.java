@@ -71,7 +71,7 @@ public class MainController {
     @GetMapping("/api/v1/accounts")
     public String getAccount(Model model, @AuthenticationPrincipal OidcUser oidcUser) {
 
-        AccountInfo accountInfo = accountsClient.getAccountInfo(oidcUser.getName());
+        AccountInfo accountInfo = accountsClient.getAccountInfo(oidcUser.getPreferredUsername());
         model.addAttribute("name", accountInfo.name());
         model.addAttribute("birthdate", accountInfo.birthDay().format(DateTimeFormatter.ISO_DATE));
         model.addAttribute("sum", accountInfo.balance());
