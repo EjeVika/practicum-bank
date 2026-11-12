@@ -1,0 +1,26 @@
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            # Имя маршрута (используется в логах и конфигурации)
+            - id: accounts-service
+              # Куда Gateway проксирует запросы, подходящие под предикаты
+              # Здесь это accounts-service
+              uri: lb://accounts-service
+              predicates:
+                # Все запросы с путём /accounts/** попадут на этот маршрут
+                - Path=/api/v1/accounts/**
+              filters:
+                # Подключаем кастомный фильтр Token Relay
+                # Он берёт JWT и добавляет заголовок Authorization к исходящему запросу
+                - name: JwtTokenRelay
+                - StripPrefix=2
+    zookeeper:
+      connect-string: localhost:2181
+      discovery:
+        enabled: true
+logging:
+  level:
+    root: DEBUG

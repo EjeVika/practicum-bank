@@ -1,3 +1,5 @@
+server:
+  port: 8081
 spring:
   application:
     name: bank-ui
@@ -15,14 +17,8 @@ spring:
         provider:
           keycloak:
             issuer-uri: http://localhost:8080/realms/bank-realm
-  zookeeper:
-    connect-string: localhost:2181
-    discovery:
-      enabled: true
-      register: false
-server:
-  port: 8081
-
+  config:
+    import: configserver:http://127.0.0.1:8888
 bank:
   gateway:
     base-url: http://bank-gateway

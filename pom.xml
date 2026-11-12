@@ -12,6 +12,7 @@
     <description>Практикум банк родитель</description>
     <modules>
         <module>bank-gateway</module>
+        <module>bank-config-server</module>
         <module>accounts-service</module>
 <!--        <module>cash-service</module>-->
 <!--        <module>transfer-service</module>-->
