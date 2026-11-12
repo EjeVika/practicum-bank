@@ -1,6 +1,6 @@
 spring:
   application:
-    name: practicum-bank-ui
+    name: bank-ui
   security:
     oauth2:
       client:
@@ -15,9 +15,14 @@ spring:
         provider:
           keycloak:
             issuer-uri: http://localhost:8080/realms/bank-realm
+  zookeeper:
+    connect-string: localhost:2181
+    discovery:
+      enabled: true
+      register: false
 server:
   port: 8081
 
 bank:
   gateway:
-    base-url: http://localhost:8082
+    base-url: http://bank-gateway

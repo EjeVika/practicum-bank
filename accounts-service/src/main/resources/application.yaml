@@ -14,6 +14,11 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8080/realms/bank-realm
+  cloud:
+    zookeeper:
+      connect-string: localhost:2181
+      discovery:
+        enabled: true
 
 server:
   port: 8084
