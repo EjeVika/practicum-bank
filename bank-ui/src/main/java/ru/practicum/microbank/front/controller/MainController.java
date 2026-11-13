@@ -1,21 +1,23 @@
 package ru.practicum.microbank.front.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.practicum.microbank.front.client.AccountsClient;
-import ru.practicum.microbank.front.controller.dto.CashAction;
+import ru.practicum.microbank.front.exception.AccountNotFoundException;
+import ru.practicum.microbank.front.model.*;
 import ru.practicum.microbank.front.controller.stub.AccountStub;
-import ru.practicum.microbank.front.model.AccountInfo;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * Контроллер main.html.
@@ -39,6 +41,7 @@ import java.time.format.DateTimeFormatter;
  * С примерами использования можно ознакомиться в тестовом классе заглушке AccountStub
  */
 @Controller
+@Slf4j
 public class MainController {
 
     private final AccountsClient accountsClient;
@@ -62,50 +65,67 @@ public class MainController {
     }
 
     /**
-     * GET /account.
-     * Что нужно сделать:
-     * 1. Сходить в сервис accounts через Gateway API для получения данных аккаунта по REST
-     * 2. Заполнить модель main.html полученными из ответа данными
-     * 3. Текущего пользователя можно получить из контекста Security
+     * GET /accounts.
+     * 1) Выполняем запрос в сервис accounts-service для получения инфо счета по логину
+     *    Если такого не найдено то создаем его с имеющейся инфой, и просим дозаполнить поля
+     * 2) Выполняем запрос в сервис accounts-service для получения краткой информации о всех счетах
      */
     @GetMapping("/api/v1/accounts")
     public String getAccount(Model model, @AuthenticationPrincipal OidcUser oidcUser) {
-
-        AccountInfo accountInfo = accountsClient.getAccountInfo(oidcUser.getPreferredUsername());
-        model.addAttribute("name", accountInfo.name());
-        model.addAttribute("birthdate", accountInfo.birthDay().format(DateTimeFormatter.ISO_DATE));
-        model.addAttribute("sum", accountInfo.balance());
-        model.addAttribute("accounts", accountStub.getAccounts());
-        model.addAttribute("errors", null);
-        model.addAttribute("info", null);
-
-        if (oidcUser != null) {
-            model.addAttribute("username", oidcUser.getPreferredUsername());
+        if (oidcUser == null) {
+            model.addAttribute("errors", "Ошибка авторизации пользователя");
+            return "main";
         }
+        try {
+            AccountInfo accountInfo = accountsClient.getAccountInfo(oidcUser.getPreferredUsername());
+            model.addAttribute("name", accountInfo.name());
+            model.addAttribute("birthdate", accountInfo.birthDay().format(DateTimeFormatter.ISO_DATE));
+            model.addAttribute("sum", accountInfo.balance());
+        } catch (AccountNotFoundException e) {
+            log.info("Пользователь не найден, создаем нового");
+            String login = oidcUser.getPreferredUsername();
+            String name = oidcUser.getFullName();
+            accountsClient.createAccount(
+                    new CreateAccountRequest(login, name));
+            model.addAttribute("name", name);
+            model.addAttribute("sum", String.valueOf(0));
+            model.addAttribute("info", "Создан новый счет. Заполните персональные данные");
+        }
+        List<AccountInfoShort> accountsInfoShort = accountsClient.getAccountsInfoShort();
+        accountsInfoShort = accountsInfoShort
+                .stream()
+                .filter(accountInfoShort -> !accountInfoShort.login().equals(oidcUser.getPreferredUsername()))
+                .toList();
+        model.addAttribute("accounts", accountsInfoShort);
 
         return "main";
     }
 
     /**
-     * POST /account.
+     * PATCH /accounts.
      * Что нужно сделать:
      * 1. Сходить в сервис accounts через Gateway API для изменения данных текущего пользователя по REST
-     * 2. Заполнить модель main.html полученными из ответа данными
-     * 3. Текущего пользователя можно получить из контекста Security
      *
      * Изменяемые данные:
      * 1. name - Фамилия Имя
      * 2. birthdate - дата рождения в формате YYYY-DD-MM
      */
-    @PostMapping("/account")
+    @PatchMapping("/accounts")
     public String editAccount(
             Model model,
             @RequestParam("name") String name,
-            @RequestParam("birthdate") LocalDate birthdate
+            @RequestParam("birthdate") LocalDate birthdate,
+            @AuthenticationPrincipal OidcUser oidcUser
     ) {
+        if (oidcUser != null) {
+            model.addAttribute("errors", "Ошибка авторизации пользователя при попытке редактирования");
+            return "main";
+        }
+        UpdateAccountRequest request = new UpdateAccountRequest(name, birthdate);
+        AccountInfo accountInfo = accountsClient.editAccount(oidcUser.getPreferredUsername(), request);
         // TODO: Заменить на то, что описано в комментарии к методу
         accountStub.setNameAndBirthdate(name, birthdate);
-        accountStub.fillModel(model, null, null);
+        //accountStub.fillMNodel(model, null, null);
 
         return "main";
     }

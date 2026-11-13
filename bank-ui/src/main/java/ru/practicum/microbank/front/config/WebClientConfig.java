@@ -1,5 +1,6 @@
 package ru.practicum.microbank.front.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,9 @@ public class WebClientConfig {
 
     private final OAuth2AuthorizedClientService authorizedClientService;
 
+    @Value("${bank.gateway.base-url}")
+    private String gatewayBaseUrl;
+
     public WebClientConfig(OAuth2AuthorizedClientService authorizedClientService) {
         this.authorizedClientService = authorizedClientService;
     }
@@ -26,6 +30,7 @@ public class WebClientConfig {
     @LoadBalanced
     public WebClient.Builder gatewayWebClientBuilder() {
         return WebClient.builder()
+                .baseUrl(gatewayBaseUrl)
                 .filter(addAccessTokenHeader());
     }
     @Bean

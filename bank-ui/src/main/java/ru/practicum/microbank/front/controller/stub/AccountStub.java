@@ -4,8 +4,7 @@ import jakarta.annotation.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestParam;
-import ru.practicum.microbank.front.controller.dto.AccountDto;
-import ru.practicum.microbank.front.controller.dto.CashAction;
+import ru.practicum.microbank.front.model.CashAction;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -23,23 +22,23 @@ public class AccountStub {
     private LocalDate birthdate = LocalDate.of(2001, 1, 1);
     private int sum = 100;
 
-    private final List<AccountDto> accounts = List.of(
-            new AccountDto("petrov", "Петров Петр"),
-            new AccountDto("sidorov", "Сидоров Сидор"),
-            new AccountDto("fedorov", "Федоров Федор")
-    );
-
-    public List<AccountDto> getAccounts() {
-        return accounts;
-    }
-
-    public String getByLogin(String login) {
-        return accounts.stream()
-                .filter(account -> account.login().equals(login))
-                .map(AccountDto::name)
-                .findFirst()
-                .get();
-    }
+//    private final List<AccountDto> accounts = List.of(
+//            new AccountDto("petrov", "Петров Петр"),
+//            new AccountDto("sidorov", "Сидоров Сидор"),
+//            new AccountDto("fedorov", "Федоров Федор")
+//    );
+//
+//    public List<AccountDto> getAccounts() {
+//        return accounts;
+//    }
+//
+//    public String getByLogin(String login) {
+//        return accounts.stream()
+//                .filter(account -> account.login().equals(login))
+//                .map(AccountDto::name)
+//                .findFirst()
+//                .get();
+//    }
 
     public void setNameAndBirthdate(String name, LocalDate birthdate) {
         this.name = name;
@@ -60,7 +59,7 @@ public class AccountStub {
             fillModel(model, List.of("Недостаточно средств на счету"), null);
         } else {
             sum = sum - value;
-            fillModel(model, null, "Успешно переведено %d руб клиенту %s".formatted(value, getByLogin(login)));
+            fillModel(model, null, "Успешно переведено %d руб клиенту %s".formatted(value, login));
         }
 
         return "main";
@@ -70,7 +69,7 @@ public class AccountStub {
         model.addAttribute("name", name);
         model.addAttribute("birthdate", birthdate.format(DateTimeFormatter.ISO_DATE));
         model.addAttribute("sum", sum);
-        model.addAttribute("accounts", accounts);
+        model.addAttribute("accounts", null);
         model.addAttribute("errors", errors);
         model.addAttribute("info", info);
     }
