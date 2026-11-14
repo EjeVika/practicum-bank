@@ -6,11 +6,17 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.practicum.microbank.front.client.AccountsClient;
 import ru.practicum.microbank.front.controller.stub.AccountStub;
 import ru.practicum.microbank.front.exception.AccountNotFoundException;
-import ru.practicum.microbank.front.model.*;
+import ru.practicum.microbank.front.model.AccountInfo;
+import ru.practicum.microbank.front.model.AccountInfoShort;
+import ru.practicum.microbank.front.model.CashAction;
+import ru.practicum.microbank.front.model.UpdateAccountRequest;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -75,9 +81,7 @@ public class MainController {
         }
         try {
             AccountInfo accountInfo = accountsClient.getAccountInfo(oidcUser.getPreferredUsername());
-            model.addAttribute("name", accountInfo.name());
-            model.addAttribute("birthdate", accountInfo.birthDay().format(DateTimeFormatter.ISO_DATE));
-            model.addAttribute("sum", accountInfo.balance());
+            fillModelWithAccountInfo(model, accountInfo);
         } catch (AccountNotFoundException e) {
             log.info("Пользователь не найден, создаем нового");
             String login = oidcUser.getPreferredUsername();
@@ -98,32 +102,36 @@ public class MainController {
         return "main";
     }
 
+    private void fillModelWithAccountInfo(Model model, AccountInfo accountInfo) {
+        model.addAttribute("name", accountInfo.name());
+        model.addAttribute("birthdate",
+                accountInfo.birthday() == null ? null : accountInfo.birthday().format(DateTimeFormatter.ISO_DATE));
+        model.addAttribute("sum", accountInfo.balance());
+    }
+
     /**
-     * PATCH /accounts.
+     * POST /accounts.
      * Что нужно сделать:
-     * 1. Сходить в сервис accounts через Gateway API для изменения данных текущего пользователя по REST
+     * 1. Идет в сервис accounts через Gateway API для изменения данных текущего пользователя по REST
      * <p>
      * Изменяемые данные:
      * 1. name - Фамилия Имя
      * 2. birthdate - дата рождения в формате YYYY-DD-MM
      */
-    @PatchMapping("/accounts")
+    @PostMapping("/api/v1/accounts")
     public String editAccount(
             Model model,
             @RequestParam("name") String name,
             @RequestParam("birthdate") LocalDate birthdate,
             @AuthenticationPrincipal OidcUser oidcUser
     ) {
-        if (oidcUser != null) {
+        if (oidcUser == null) {
             model.addAttribute("errors", "Ошибка авторизации пользователя при попытке редактирования");
             return "main";
         }
         UpdateAccountRequest request = new UpdateAccountRequest(name, birthdate);
         AccountInfo accountInfo = accountsClient.editAccount(oidcUser.getPreferredUsername(), request);
-        // TODO: Заменить на то, что описано в комментарии к методу
-        accountStub.setNameAndBirthdate(name, birthdate);
-        //accountStub.fillMNodel(model, null, null);
-
+        fillModelWithAccountInfo(model, accountInfo);
         return "main";
     }
 
@@ -138,7 +146,7 @@ public class MainController {
      * 1. value - сумма списания
      * 2. action - GET (снять), PUT (пополнить)
      */
-    @PostMapping("/cash")
+    @PostMapping("/api/v1/cash")
     public String editCash(
             Model model,
             @RequestParam("value") int value,
@@ -161,7 +169,7 @@ public class MainController {
      * 1. value - сумма списания
      * 2. login - логин пользователя получателя
      */
-    @PostMapping("/transfer")
+    @PostMapping("/api/v1/transfer")
     public String transfer(
             Model model,
             @RequestParam("value") int value,

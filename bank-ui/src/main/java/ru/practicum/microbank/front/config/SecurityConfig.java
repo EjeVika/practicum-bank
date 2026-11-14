@@ -12,6 +12,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.disable())
                 // Блок настройки авторизации запросов
                 .authorizeHttpRequests(auth -> auth
                         // Разрешаем всем доступ к главной странице и статическим ресурсам по пути /css/**

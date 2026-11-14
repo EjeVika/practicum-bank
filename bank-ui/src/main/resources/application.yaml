@@ -22,3 +22,7 @@ spring:
 bank:
   gateway:
     base-url: http://bank-gateway
+logging:
+  level:
+    org.springframework.security: INFO
+    org.springframework.web: INFO
