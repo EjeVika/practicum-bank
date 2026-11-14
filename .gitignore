@@ -36,3 +36,4 @@ bank-gateway/target/*
 bank-config-server/target/*
 accounts-service/target/*
 cash-service/target/*
+transfer-service/target/*

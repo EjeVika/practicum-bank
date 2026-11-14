@@ -3,10 +3,7 @@ package ru.practicum.microbank.accounts.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.microbank.accounts.dto.AccountInfo;
-import ru.practicum.microbank.accounts.dto.AccountInfoShort;
-import ru.practicum.microbank.accounts.dto.UpdateAccountRequest;
-import ru.practicum.microbank.accounts.dto.UpdateBalanceRequest;
+import ru.practicum.microbank.accounts.dto.*;
 import ru.practicum.microbank.accounts.service.AccountService;
 
 import java.util.List;
@@ -54,6 +51,13 @@ public class AccountsController {
     @PostMapping("/accounts/cash/{login}")
     @PreAuthorize("hasRole('SERVICE') && hasAuthority('accounts.access')")
     public String editCash(@PathVariable("login") String login, @RequestBody UpdateBalanceRequest request
+    ) {
+        return "OK";
+    }
+
+    @PostMapping("/accounts/transfer")
+    @PreAuthorize("hasRole('SERVICE') && hasAuthority('accounts.access')")
+    public String editCash(@RequestBody TransferRequest request
     ) {
         return "OK";
     }
