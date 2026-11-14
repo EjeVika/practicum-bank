@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.microbank.accounts.dto.AccountInfo;
 import ru.practicum.microbank.accounts.dto.AccountInfoShort;
 import ru.practicum.microbank.accounts.dto.UpdateAccountRequest;
+import ru.practicum.microbank.accounts.dto.UpdateBalanceRequest;
 import ru.practicum.microbank.accounts.service.AccountService;
 
 import java.util.List;
@@ -48,5 +49,12 @@ public class AccountsController {
     public AccountInfo editAccount(@PathVariable("login") String login, @RequestBody UpdateAccountRequest request) {
         log.trace("Изменить пользователя");
         return accountService.updateAccount(login, request);
+    }
+
+    @PostMapping("/accounts/cash/{login}")
+    @PreAuthorize("hasRole('SERVICE') && hasAuthority('accounts.access')")
+    public String editCash(@PathVariable("login") String login, @RequestBody UpdateBalanceRequest request
+    ) {
+        return "OK";
     }
 }
