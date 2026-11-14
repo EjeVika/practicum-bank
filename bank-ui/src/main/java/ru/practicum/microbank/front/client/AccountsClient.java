@@ -8,7 +8,6 @@ import reactor.core.publisher.Mono;
 import ru.practicum.microbank.front.exception.AccountNotFoundException;
 import ru.practicum.microbank.front.model.AccountInfo;
 import ru.practicum.microbank.front.model.AccountInfoShort;
-import ru.practicum.microbank.front.model.CreateAccountRequest;
 import ru.practicum.microbank.front.model.UpdateAccountRequest;
 
 import java.util.List;
@@ -60,11 +59,11 @@ public class AccountsClient {
                 .block();
     }
 
-    public AccountInfo createAccount(CreateAccountRequest createAccountRequest) {
+    public AccountInfo createAccount(AccountInfoShort accountInfoShort) {
         return gatewayWebClient
                 .post()
-                .uri("/api/v1/accounts/{login}", createAccountRequest.login())
-                .bodyValue(createAccountRequest)
+                .uri("/api/v1/accounts/{login}", accountInfoShort.login())
+                .bodyValue(accountInfoShort)
                 .retrieve()
                 .bodyToMono(AccountInfo.class)
                 .block();

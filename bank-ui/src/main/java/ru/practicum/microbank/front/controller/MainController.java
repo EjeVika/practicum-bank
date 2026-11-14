@@ -83,7 +83,7 @@ public class MainController {
             String login = oidcUser.getPreferredUsername();
             String name = oidcUser.getFullName();
             accountsClient.createAccount(
-                    new CreateAccountRequest(login, name));
+                    new AccountInfoShort(login, name));
             model.addAttribute("name", name);
             model.addAttribute("sum", String.valueOf(0));
             model.addAttribute("info", "Создан новый счет. Заполните персональные данные");
