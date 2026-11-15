@@ -11,13 +11,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.practicum.microbank.front.client.AccountsClient;
+import ru.practicum.microbank.front.client.CashClient;
 import ru.practicum.microbank.front.controller.stub.AccountStub;
 import ru.practicum.microbank.front.exception.AccountNotFoundException;
-import ru.practicum.microbank.front.model.AccountInfo;
-import ru.practicum.microbank.front.model.AccountInfoShort;
-import ru.practicum.microbank.front.model.CashAction;
-import ru.practicum.microbank.front.model.UpdateAccountRequest;
+import ru.practicum.microbank.front.model.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -48,9 +47,11 @@ import java.util.List;
 public class MainController {
 
     private final AccountsClient accountsClient;
+    private final CashClient cashClient;
 
-    public MainController(AccountsClient accountsClient) {
+    public MainController(AccountsClient accountsClient, CashClient cashClient) {
         this.accountsClient = accountsClient;
+        this.cashClient = cashClient;
     }
 
 
@@ -79,34 +80,47 @@ public class MainController {
             model.addAttribute("errors", "Ошибка авторизации пользователя");
             return "main";
         }
-        try {
-            AccountInfo accountInfo = accountsClient.getAccountInfo(oidcUser.getPreferredUsername());
-            fillModelWithAccountInfo(model, accountInfo);
-        } catch (AccountNotFoundException e) {
-            log.info("Пользователь не найден, создаем нового");
-            String login = oidcUser.getPreferredUsername();
-            String name = oidcUser.getFullName();
-            accountsClient.createAccount(
-                    new AccountInfoShort(login, name));
-            model.addAttribute("name", name);
-            model.addAttribute("sum", String.valueOf(0));
-            model.addAttribute("info", "Создан новый счет. Заполните персональные данные");
-        }
-        List<AccountInfoShort> accountsInfoShort = accountsClient.getAccountsInfoShort();
-        accountsInfoShort = accountsInfoShort
-                .stream()
-                .filter(accountInfoShort -> !accountInfoShort.login().equals(oidcUser.getPreferredUsername()))
-                .toList();
-        model.addAttribute("accounts", accountsInfoShort);
-
+        populateModel(model, oidcUser);
         return "main";
     }
 
-    private void fillModelWithAccountInfo(Model model, AccountInfo accountInfo) {
-        model.addAttribute("name", accountInfo.name());
-        model.addAttribute("birthdate",
-                accountInfo.birthday() == null ? null : accountInfo.birthday().format(DateTimeFormatter.ISO_DATE));
-        model.addAttribute("sum", accountInfo.balance());
+    /**
+     * Загружает полные данные текущего пользователя и список счетов
+     */
+    private void populateModel(Model model, OidcUser oidcUser) {
+        String login = oidcUser.getPreferredUsername();
+        try {
+            AccountInfo accountInfo = accountsClient.getAccountInfo(login);
+            model.addAttribute("name", accountInfo.name());
+            model.addAttribute("birthdate",
+                    accountInfo.birthday() == null ? null : accountInfo.birthday().format(DateTimeFormatter.ISO_DATE));
+            model.addAttribute("sum", accountInfo.balance());
+        } catch (AccountNotFoundException e) {
+            log.info("Пользователь не найден, создаем нового");
+            String name = oidcUser.getFullName();
+            accountsClient.createAccount(new AccountInfoShort(login, name));
+            model.addAttribute("name", name);
+            model.addAttribute("sum", String.valueOf(0));
+            model.addAttribute("info", "Создан новый счет. Заполните персональные данные");
+        } catch (Exception e) {
+            log.warn("Не удалось загрузить данные аккаунта при восстановлении модели", e);
+            model.addAttribute("name", oidcUser.getFullName());
+            model.addAttribute("sum", "0");
+        }
+        populateAccountsList(model, login);
+    }
+
+    private void populateAccountsList(Model model, String currentLogin) {
+        try {
+            List<AccountInfoShort> accountsInfoShort = accountsClient.getAccountsInfoShort()
+                    .stream()
+                    .filter(accountInfoShort -> !accountInfoShort.login().equals(currentLogin))
+                    .toList();
+            model.addAttribute("accounts", accountsInfoShort);
+        } catch (Exception e) {
+            log.warn("Не удалось загрузить список счетов для переводов", e);
+            model.addAttribute("accounts", List.of());
+        }
     }
 
     /**
@@ -130,8 +144,10 @@ public class MainController {
             return "main";
         }
         UpdateAccountRequest request = new UpdateAccountRequest(name, birthdate);
-        AccountInfo accountInfo = accountsClient.editAccount(oidcUser.getPreferredUsername(), request);
-        fillModelWithAccountInfo(model, accountInfo);
+        accountsClient.editAccount(oidcUser.getPreferredUsername(), request);
+
+        populateModel(model, oidcUser);
+        model.addAttribute("info", "Данные сохранены");
         return "main";
     }
 
@@ -149,12 +165,23 @@ public class MainController {
     @PostMapping("/api/v1/cash")
     public String editCash(
             Model model,
-            @RequestParam("value") int value,
-            @RequestParam("action") CashAction action
+            @RequestParam("value") double sum,
+            @RequestParam("action") CashAction action,
+            @AuthenticationPrincipal OidcUser oidcUser
     ) {
-        // TODO: Заменить на то, что описано в комментарии к методу
-        accountStub.editCash(model, value, action);
-
+        if (oidcUser == null) {
+            model.addAttribute("errors", "Ошибка авторизации пользователя при пополнении/снятии");
+            return "main";
+        }
+        UpdateBalanceRequest request = new UpdateBalanceRequest(BigDecimal.valueOf(sum), action);
+        try {
+            UpdateBalanceResponse response = cashClient.updateBalance(oidcUser.getPreferredUsername(), request);
+            model.addAttribute("info", response.message());
+        } catch (Exception e) {
+            model.addAttribute("errors", "Операция пополнения/снятия не выполнена: " + e.getLocalizedMessage());
+            model.addAttribute("value", sum);
+        }
+        populateModel(model, oidcUser);
         return "main";
     }
 
@@ -190,6 +217,9 @@ public class MainController {
         log.error("Ошибка под пользователем {}", oidcUser != null ? oidcUser.getPreferredUsername() : null, exception);
         model.addAttribute("errors", "Внутренняя ошибка. Обратитесь к администратору. " + exception.getMessage());
 
+        if (oidcUser != null) {
+            populateModel(model, oidcUser);
+        }
         return "main";
     }
 }
