@@ -3,9 +3,11 @@ package ru.practicum.microbank.accounts.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.microbank.accounts.client.NotificationsClient;
 import ru.practicum.microbank.accounts.dto.*;
 import ru.practicum.microbank.accounts.service.AccountService;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -14,9 +16,11 @@ import java.util.List;
 public class AccountsController {
 
     private final AccountService accountService;
+    private final NotificationsClient notificationsClient;
 
-    public AccountsController(AccountService accountService) {
+    public AccountsController(AccountService accountService, NotificationsClient notificationsClient) {
         this.accountService = accountService;
+        this.notificationsClient = notificationsClient;
     }
 
     @GetMapping("/accounts/{login}")
@@ -38,14 +42,25 @@ public class AccountsController {
     @PreAuthorize("hasRole('USER') && hasAuthority('accounts.access')")
     public AccountInfo createAccount(@PathVariable("login") String login, @RequestBody AccountInfoShort request) {
         log.trace("Создать счет и пользователя");
-        return accountService.createAccountAndUser(login, request);
+        AccountInfo accountInfo = accountService.createAccountAndUser(login, request);
+        notificationsClient.sendNotification(new NotificationRequest(
+                "ACCOUNT_CREATED",
+                String.format("Создан счет для пользователя %s(%s). Баланс 0 рублей", request.name(), login)
+        ));
+        return accountInfo;
     }
 
     @PatchMapping("/accounts/{login}")
     @PreAuthorize("hasRole('USER') && hasAuthority('accounts.access')")
     public AccountInfo editAccount(@PathVariable("login") String login, @RequestBody UpdateAccountRequest request) {
         log.trace("Изменить пользователя");
-        return accountService.updateAccount(login, request);
+        AccountInfo accountInfo = accountService.updateAccount(login, request);
+        notificationsClient.sendNotification(new NotificationRequest(
+                "ACCOUNT_INFO_UPDATED",
+                String.format("Изменены данные пользователя %s: имя - %s, день рожденья - %s",
+                        login, request.name(), request.birthday().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+        ));
+        return accountInfo;
     }
 
     @PostMapping("/accounts/cash/{login}")

@@ -38,5 +38,5 @@ management:
       show-details: always
 
 bank:
-  accounts-service:
-    base-url: http://localhost:8084
+  gateway:
+    base-url: http://localhost:8082

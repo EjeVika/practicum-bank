@@ -27,6 +27,16 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8080/realms/bank-realm
+      client:
+        registration:
+          accounts-service:
+            provider: keycloak
+            client-id: accounts-service
+            client-secret: isagpkfRDe6hZNfJoZlgo4mtwd6AorQj
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8080/realms/bank-realm
   cloud:
     config:
       enabled: false
@@ -43,6 +53,9 @@ management:
   endpoint:
     health:
       show-details: always
+bank:
+  gateway:
+    base-url: http://localhost:8082
 
 logging:
   level:

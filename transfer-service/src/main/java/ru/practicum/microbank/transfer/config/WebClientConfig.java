@@ -45,7 +45,7 @@ public class WebClientConfig {
     }
 
     /**
-     * WebClient для запросов transfer-service → accounts-service.
+     * WebClient для запросов transfer-service → bank-gateway.
      * <p>
      * Важный момент:
      * - этот WebClient автоматически добавляет Authorization: Bearer <service-token>
@@ -55,7 +55,7 @@ public class WebClientConfig {
     @Bean
     public WebClient accountsWebClient(
             OAuth2AuthorizedClientManager authorizedClientManager,
-            @Value("${bank.accounts-service.base-url}") String accountsServiceBaseUrl
+            @Value("${bank.gateway.base-url}") String gatewayBaseUrl
     ) {
         // Фильтр, который автоматически:
         //  - получает сервисный access token (client_credentials),
@@ -69,7 +69,7 @@ public class WebClientConfig {
         oauth2.setDefaultClientRegistrationId("transfer-service");
 
         return WebClient.builder()
-                .baseUrl(accountsServiceBaseUrl) // Базовый URL accounts-service
+                .baseUrl(gatewayBaseUrl) // Базовый URL accounts-service
                 .apply(oauth2.oauth2Configuration()) // Подключаем OAuth2 фильтр
                 .build();
     }

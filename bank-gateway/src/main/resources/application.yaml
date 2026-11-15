@@ -25,7 +25,6 @@ spring:
               filters:
                 - name: JwtTokenRelay
                 - StripPrefix=2
-
             # 2. Запросы от bank-ui к cash-service
             - id: cash-service-ui
               uri: lb://cash-service
@@ -34,15 +33,7 @@ spring:
               filters:
                 - name: JwtTokenRelay
                 - StripPrefix=2
-
-            # 3. Внутренние запросы от любых сервисов к accounts-service
-            - id: accounts-service-internal
-              uri: lb://accounts-service
-              predicates:
-                - Path=/accounts/**
-              filters:
-
-            # 4. Запросы от bank-ui к transfer-service
+            # 3. Запросы от bank-ui к transfer-service
             - id: transfer-service-ui
               uri: lb://transfer-service
               predicates:
@@ -50,6 +41,18 @@ spring:
               filters:
                 - name: JwtTokenRelay
                 - StripPrefix=2
+            # 4. Внутренние запросы от любых сервисов к accounts-service
+            - id: accounts-service-internal
+              uri: lb://accounts-service
+              predicates:
+                - Path=/accounts/**
+              filters:
+            # 5. Внутренние запросы от любых сервисов к notifications-service
+            - id: notifications-service-internal
+              uri: lb://notifications-service
+              predicates:
+                - Path=/notify/**
+              filters:
     zookeeper:
       connect-string: localhost:2181
       discovery:
