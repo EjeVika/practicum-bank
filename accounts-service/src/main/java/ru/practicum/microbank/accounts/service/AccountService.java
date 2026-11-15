@@ -9,6 +9,7 @@ import ru.practicum.microbank.accounts.dto.*;
 import ru.practicum.microbank.accounts.exception.AccountNotFoundException;
 import ru.practicum.microbank.accounts.exception.LowBalanceException;
 import ru.practicum.microbank.accounts.mapper.AccountMapper;
+import ru.practicum.microbank.accounts.mapper.NameUtils;
 import ru.practicum.microbank.accounts.mapper.UserMapper;
 import ru.practicum.microbank.accounts.model.Account;
 import ru.practicum.microbank.accounts.repository.AccountRepository;
@@ -104,5 +105,35 @@ public class AccountService {
             }
             default -> throw new UnsupportedOperationException("Неизвестная операция работы с наличными средствами");
         }
+    }
+
+    @Transactional
+    public TransferResponse transfer(TransferRequest request) {
+        Preconditions.checkNotNull(request);
+        Preconditions.checkNotNull(request.sum());
+        Preconditions.checkArgument(request.sum().compareTo(BigDecimal.ZERO) > 0,
+                "Сумма перевода должна быть больше 0");
+        Preconditions.checkNotNull(request.fromAccountLogin());
+        Preconditions.checkNotNull(request.toAccountLogin());
+        BigDecimal transferSum = request.sum();
+        Account sourceAccount = accountRepository.findByLogin(request.fromAccountLogin()).orElseThrow(
+                () -> new AccountNotFoundException(request.fromAccountLogin()));
+        Account targetAccount = accountRepository.findByLogin(request.toAccountLogin()).orElseThrow(
+                () -> new AccountNotFoundException(request.toAccountLogin()));
+        if (transferSum.compareTo(sourceAccount.getBalance()) > 0) {
+            throw new LowBalanceException(request.fromAccountLogin());
+        }
+        BigDecimal sourceAccResultBalance = sourceAccount.getBalance().subtract(transferSum);
+        BigDecimal targetAccResultBalance = targetAccount.getBalance().add(transferSum);
+        sourceAccount.setBalance(sourceAccResultBalance);
+        targetAccount.setBalance(targetAccResultBalance);
+        return new TransferResponse(
+                request.sum(),
+                request.toAccountLogin(),
+                targetAccResultBalance,
+                request.fromAccountLogin(),
+                sourceAccResultBalance,
+                String.format("Переведено %s рублей на счет %s", transferSum.toPlainString(),
+                        NameUtils.combineName(targetAccount.getUser())));
     }
 }

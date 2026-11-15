@@ -57,8 +57,9 @@ public class AccountsController {
 
     @PostMapping("/accounts/transfer")
     @PreAuthorize("hasRole('SERVICE') && hasAuthority('accounts.access')")
-    public String editCash(@RequestBody TransferRequest request
-    ) {
-        return "OK";
+    public TransferResponse transfer(@RequestBody TransferRequest request) {
+        log.trace("Вызвался метод перевода денег");
+        return accountService.transfer(request);
+
     }
 }

@@ -1,6 +1,5 @@
 package ru.practicum.microbank.accounts.mapper;
 
-import com.google.common.base.Strings;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -22,23 +21,7 @@ public interface AccountMapper {
 
     @Named("combineName")
     default String combineName(User user) {
-        if (user == null) {
-            return null;
-        }
-        return combineName(user.getFirstName(), user.getLastName());
-    }
-
-    default String combineName(String firstName, String lastName) {
-        if (Strings.isNullOrEmpty(firstName) && Strings.isNullOrEmpty(lastName)) {
-            return null;
-        }
-        if (Strings.isNullOrEmpty(firstName)) {
-            return lastName;
-        }
-        if (Strings.isNullOrEmpty(lastName)) {
-            return firstName;
-        }
-        return firstName + " " + lastName;
+        return NameUtils.combineName(user);
     }
 
     @Mapping(target = "id", ignore = true)

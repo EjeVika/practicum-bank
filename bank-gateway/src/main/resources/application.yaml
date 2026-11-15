@@ -35,12 +35,21 @@ spring:
                 - name: JwtTokenRelay
                 - StripPrefix=2
 
-            # 3. Внутренние запросы от cash-service к accounts-service
+            # 3. Внутренние запросы от любых сервисов к accounts-service
             - id: accounts-service-internal
               uri: lb://accounts-service
               predicates:
                 - Path=/accounts/**
               filters:
+
+            # 4. Запросы от bank-ui к transfer-service
+            - id: transfer-service-ui
+              uri: lb://transfer-service
+              predicates:
+                - Path=/api/v1/transfer/**
+              filters:
+                - name: JwtTokenRelay
+                - StripPrefix=2
     zookeeper:
       connect-string: localhost:2181
       discovery:

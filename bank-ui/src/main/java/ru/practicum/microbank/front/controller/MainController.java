@@ -1,7 +1,6 @@
 package ru.practicum.microbank.front.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
@@ -12,7 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.practicum.microbank.front.client.AccountsClient;
 import ru.practicum.microbank.front.client.CashClient;
-import ru.practicum.microbank.front.controller.stub.AccountStub;
+import ru.practicum.microbank.front.client.TransferClient;
 import ru.practicum.microbank.front.exception.AccountNotFoundException;
 import ru.practicum.microbank.front.model.*;
 
@@ -48,16 +47,13 @@ public class MainController {
 
     private final AccountsClient accountsClient;
     private final CashClient cashClient;
+    private final TransferClient transferClient;
 
-    public MainController(AccountsClient accountsClient, CashClient cashClient) {
+    public MainController(AccountsClient accountsClient, CashClient cashClient, TransferClient transferClient) {
         this.accountsClient = accountsClient;
         this.cashClient = cashClient;
+        this.transferClient = transferClient;
     }
-
-
-    // TODO: Удалить заглушку, так как используется только для ознакомительных целей
-    @Autowired
-    private AccountStub accountStub;
 
     /**
      * GET /.
@@ -154,9 +150,7 @@ public class MainController {
     /**
      * POST /cash.
      * Что нужно сделать:
-     * 1. Сходить в сервис cash через Gateway API для снятия/пополнения счета текущего аккаунта по REST
-     * 2. Заполнить модель main.html полученными из ответа данными
-     * 3. Текущего пользователя можно получить из контекста Security
+     * Идет в сервис cash через Gateway API для снятия/пополнения счета текущего аккаунта по REST
      * <p>
      * Параметры:
      * 1. value - сумма списания
@@ -189,9 +183,7 @@ public class MainController {
     /**
      * POST /transfer.
      * Что нужно сделать:
-     * 1. Сходить в сервис accounts через Gateway API для перевода со счета текущего аккаунта на счет другого аккаунта по REST
-     * 2. Заполнить модель main.html полученными из ответа данными
-     * 3. Текущего пользователя можно получить из контекста Security
+     * Идет в сервис accounts через Gateway API для перевода со счета текущего аккаунта на счет другого аккаунта по REST
      * <p>
      * Параметры:
      * 1. value - сумма списания
@@ -200,12 +192,24 @@ public class MainController {
     @PostMapping("/api/v1/transfer")
     public String transfer(
             Model model,
-            @RequestParam("value") int value,
-            @RequestParam("login") String login
+            @RequestParam("value") double sum,
+            @RequestParam("login") String toAccountLogin,
+            @AuthenticationPrincipal OidcUser oidcUser
     ) {
-        // TODO: Заменить на то, что описано в комментарии к методу
-        accountStub.transfer(model, value, login);
-
+        if (oidcUser == null) {
+            model.addAttribute("errors", "Ошибка авторизации пользователя при пополнении/снятии");
+            return "main";
+        }
+        TransferRequest request = new TransferRequest(BigDecimal.valueOf(sum), toAccountLogin, oidcUser.getPreferredUsername());
+        try {
+            TransferResponse response = transferClient.transfer(request);
+            model.addAttribute("info", response.message());
+        } catch (Exception e) {
+            String errorMessage = "Операция перевода не выполнена: " + e.getLocalizedMessage();
+            log.warn(errorMessage, e);
+            model.addAttribute("errors", errorMessage);
+        }
+        populateModel(model, oidcUser);
         return "main";
     }
 

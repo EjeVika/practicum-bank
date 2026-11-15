@@ -51,7 +51,7 @@ public class SecurityConfig {
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(this::extractAuthoritiesFromRealmAccess );
+        converter.setJwtGrantedAuthoritiesConverter(this::extractAuthoritiesFromRealmAccess);
         return converter;
     }
 
@@ -87,11 +87,8 @@ public class SecurityConfig {
                 .collect(Collectors.toList());
 
         // Добавляем кастомное право для бизнес-логики
-        if (roles.contains("ACCOUNTS_ACCESS")) {
-            authorities.add(new SimpleGrantedAuthority("accounts.access"));
-        }
-        if (roles.contains("NOTIFICATIONS_ACCESS")) {
-            authorities.add(new SimpleGrantedAuthority("notifications.access"));
+        if (roles.contains("TRANSFER_ACCESS")) {
+            authorities.add(new SimpleGrantedAuthority("transfer.access"));
         }
 
         return authorities;

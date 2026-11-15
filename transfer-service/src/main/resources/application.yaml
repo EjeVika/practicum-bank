@@ -39,4 +39,4 @@ management:
 
 bank:
   accounts-service:
-    base-url: http://accounts-service
+    base-url: http://localhost:8084
