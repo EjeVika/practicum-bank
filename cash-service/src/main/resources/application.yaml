@@ -11,7 +11,7 @@ spring:
 
       client:
         registration:
-          transfer-service:
+          cash-service:
             provider: keycloak
             client-id: cash-service
             client-secret: XrWeQ8ikRqNGpKkpNaCTWbAoKyDoqsYG
@@ -39,4 +39,4 @@ management:
 
 bank:
   accounts-service:
-    base-url: http://accounts-service
+    base-url: http://localhost:8084

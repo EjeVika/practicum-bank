@@ -178,8 +178,9 @@ public class MainController {
             UpdateBalanceResponse response = cashClient.updateBalance(oidcUser.getPreferredUsername(), request);
             model.addAttribute("info", response.message());
         } catch (Exception e) {
-            model.addAttribute("errors", "Операция пополнения/снятия не выполнена: " + e.getLocalizedMessage());
-            model.addAttribute("value", sum);
+            String errorMessage = "Операция пополнения/снятия не выполнена: " + e.getLocalizedMessage();
+            log.warn(errorMessage, e);
+            model.addAttribute("errors", errorMessage);
         }
         populateModel(model, oidcUser);
         return "main";

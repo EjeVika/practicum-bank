@@ -50,9 +50,9 @@ public class AccountsController {
 
     @PostMapping("/accounts/cash/{login}")
     @PreAuthorize("hasRole('SERVICE') && hasAuthority('accounts.access')")
-    public String editCash(@PathVariable("login") String login, @RequestBody UpdateBalanceRequest request
-    ) {
-        return "OK";
+    public UpdateBalanceResponse updateBalance(@PathVariable("login") String login, @RequestBody UpdateBalanceRequest request) {
+        log.trace("Вызвался метод пополнения/снятия");
+        return accountService.updateBalance(login, request);
     }
 
     @PostMapping("/accounts/transfer")

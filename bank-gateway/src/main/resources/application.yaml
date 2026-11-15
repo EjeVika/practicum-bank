@@ -10,5 +10,41 @@ spring:
           # Адрес issuer (Keycloak realm). Gateway по нему получает ключи
           # и параметры токена, чтобы валидировать JWT от UI
           issuer-uri: http://localhost:8080/realms/bank-realm
-  config:
-    import: configserver:http://127.0.0.1:8888
+  cloud:
+    config:
+      enabled: false
+    gateway:
+      server:
+        webflux:
+          routes:
+            # 1. Запросы от bank-ui к accounts-service
+            - id: accounts-service-ui
+              uri: lb://accounts-service
+              predicates:
+                - Path=/api/v1/accounts/**
+              filters:
+                - name: JwtTokenRelay
+                - StripPrefix=2
+
+            # 2. Запросы от bank-ui к cash-service
+            - id: cash-service-ui
+              uri: lb://cash-service
+              predicates:
+                - Path=/api/v1/cash/**
+              filters:
+                - name: JwtTokenRelay
+                - StripPrefix=2
+
+            # 3. Внутренние запросы от cash-service к accounts-service
+            - id: accounts-service-internal
+              uri: lb://accounts-service
+              predicates:
+                - Path=/accounts/**
+              filters:
+    zookeeper:
+      connect-string: localhost:2181
+      discovery:
+        enabled: true
+logging:
+  level:
+    root: INFO

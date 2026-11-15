@@ -18,4 +18,15 @@ public class GlobalExceptionHandler {
 
         return problemDetail;
     }
+
+    @ExceptionHandler(LowBalanceException.class)
+    public ProblemDetail handleLowBalance(LowBalanceException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT,
+                ex.getMessage()
+        );
+        problemDetail.setTitle(ex.getLocalizedMessage());
+
+        return problemDetail;
+    }
 }

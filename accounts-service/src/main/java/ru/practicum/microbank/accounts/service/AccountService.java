@@ -5,10 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.microbank.accounts.dto.AccountInfo;
-import ru.practicum.microbank.accounts.dto.AccountInfoShort;
-import ru.practicum.microbank.accounts.dto.UpdateAccountRequest;
+import ru.practicum.microbank.accounts.dto.*;
 import ru.practicum.microbank.accounts.exception.AccountNotFoundException;
+import ru.practicum.microbank.accounts.exception.LowBalanceException;
 import ru.practicum.microbank.accounts.mapper.AccountMapper;
 import ru.practicum.microbank.accounts.mapper.UserMapper;
 import ru.practicum.microbank.accounts.model.Account;
@@ -77,5 +76,33 @@ public class AccountService {
     @Transactional(readOnly = true)
     public List<AccountInfoShort> getAccountInfoShorts() {
         return accountMapper.toDtoShortList(accountRepository.getAccountList());
+    }
+
+    @Transactional
+    public UpdateBalanceResponse updateBalance(String login, UpdateBalanceRequest request) {
+        Preconditions.checkArgument(Strings.isNotBlank(login), "Логин пуст");
+        Preconditions.checkNotNull(request);
+        Preconditions.checkNotNull(request.action());
+        Preconditions.checkNotNull(request.sum());
+        Account targetAccount = accountRepository.findByLogin(login).orElseThrow(() -> new AccountNotFoundException(login));
+        switch (request.action()) {
+            case GET -> {
+                if (request.sum().compareTo(targetAccount.getBalance()) > 0) {
+                    throw new LowBalanceException(login);
+                } else {
+                    BigDecimal resultBalance = targetAccount.getBalance().subtract(request.sum());
+                    targetAccount.setBalance(resultBalance);
+                    return new UpdateBalanceResponse(login, resultBalance, request.sum(), request.action(),
+                            String.format("Со счета успешно снято %s рублей", request.sum().toPlainString()));
+                }
+            }
+            case PUT -> {
+                BigDecimal resultBalance = targetAccount.getBalance().add(request.sum());
+                targetAccount.setBalance(resultBalance);
+                return new UpdateBalanceResponse(login, resultBalance, request.sum(), request.action(),
+                        String.format("На счет успешно положено %s рублей", request.sum().toPlainString()));
+            }
+            default -> throw new UnsupportedOperationException("Неизвестная операция работы с наличными средствами");
+        }
     }
 }

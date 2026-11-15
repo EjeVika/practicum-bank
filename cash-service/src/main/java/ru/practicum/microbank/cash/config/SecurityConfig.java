@@ -87,11 +87,8 @@ public class SecurityConfig {
                 .collect(Collectors.toList());
 
         // Добавляем кастомное право для бизнес-логики
-        if (roles.contains("ACCOUNTS_ACCESS")) {
-            authorities.add(new SimpleGrantedAuthority("accounts.access"));
-        }
-        if (roles.contains("NOTIFICATIONS_ACCESS")) {
-            authorities.add(new SimpleGrantedAuthority("notifications.access"));
+        if (roles.contains("CASH_ACCESS")) {
+            authorities.add(new SimpleGrantedAuthority("cash.access"));
         }
 
         return authorities;
