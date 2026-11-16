@@ -1,18 +1,21 @@
 server:
-  port: 8082
+  port: ${BANK_GATEWAY_PORT:8082}
+
 spring:
   application:
     name: bank-gateway
+
   security:
     oauth2:
       resourceserver:
         jwt:
           # Адрес issuer (Keycloak realm). Gateway по нему получает ключи
           # и параметры токена, чтобы валидировать JWT от UI
-          issuer-uri: http://localhost:8080/realms/bank-realm
+          issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8080}/realms/${KEYCLOAK_REALM:bank-realm}
   cloud:
     config:
       enabled: false
+
     gateway:
       server:
         webflux:
@@ -53,10 +56,12 @@ spring:
               predicates:
                 - Path=/notify/**
               filters:
+
     zookeeper:
-      connect-string: localhost:2181
+      connect-string: ${ZOOKEEPER_HOST:localhost}:${ZOOKEEPER_PORT:2181}
       discovery:
         enabled: true
+
 logging:
   level:
     root: INFO

@@ -1,32 +1,36 @@
 server:
-  port: 8085
+  port: ${CASH_SERVICE_PORT:8085}
+
 spring:
   application:
     name: cash-service
+
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/bank-realm
+          issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8080}/realms/${KEYCLOAK_REALM:bank-realm}
 
       client:
         registration:
           cash-service:
             provider: keycloak
             client-id: cash-service
-            client-secret: XrWeQ8ikRqNGpKkpNaCTWbAoKyDoqsYG
+            client-secret: ${CASH_SERVICE_CLIENT_SECRET:**********}
             authorization-grant-type: client_credentials
+
         provider:
           keycloak:
-            issuer-uri: http://localhost:8080/realms/bank-realm
+            issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8080}/realms/${KEYCLOAK_REALM:bank-realm}
+
   cloud:
     config:
       enabled: false
+
     zookeeper:
-      connect-string: localhost:2181
+      connect-string: ${ZOOKEEPER_HOST:localhost}:${ZOOKEEPER_PORT:2181}
       discovery:
         enabled: true
-
 
 management:
   endpoints:
@@ -39,4 +43,4 @@ management:
 
 bank:
   gateway:
-    base-url: http://localhost:8082
+    base-url: http://${BANK_GATEWAY_HOST:localhost}:${BANK_GATEWAY_PORT:8082}
