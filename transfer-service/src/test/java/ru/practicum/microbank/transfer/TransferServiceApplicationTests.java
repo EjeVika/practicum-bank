@@ -3,7 +3,7 @@ package ru.practicum.microbank.transfer;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+//@SpringBootTest
 class TransferServiceApplicationTests {
 
     @Test

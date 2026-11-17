@@ -1,0 +1,31 @@
+spring:
+  # Отключаем Config Server для тестов
+  config:
+    import: "optional:configserver:" # пустой импорт = не идем на config server
+
+  # Отключаем Cloud-компоненты
+  cloud:
+    zookeeper:
+      enabled: false
+      discovery:
+        enabled: false
+
+  # Flyway будет работать на тестовой БД из Testcontainers
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  # Security отключаем для упрощения тестов
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/test # не используется, так как security отключен
+
+# Упрощаем security для тестов (разрешаем все запросы)
+spring.security.enabled: false
+
+# Логирование SQL для отладки
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
