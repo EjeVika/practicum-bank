@@ -28,7 +28,14 @@ services:
     environment:
       ZOO_MY_ID: 1
       ZOO_TICK_TIME: 2000
-
+  # выдает права на volume для keycloak, который нужен чтобы не настраивать пользователей каждый раз
+  keycloak-init:
+    image: alpine:latest
+    user: root
+    volumes:
+      - keycloak-data:/data
+    command: chown -R 1000:1000 /data
+    restart: "no"
   # Keycloak (Сервер авторизации)
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.5
