@@ -36,7 +36,7 @@ spring:
           accounts-service:
             provider: keycloak
             client-id: accounts-service
-            client-secret: ${ACCOUNTS_SERVICE_CLIENT_SECRET:**********}
+            client-secret: ${ACCOUNTS_SERVICE_CLIENT_SECRET:accounts-service-secret-123}
             authorization-grant-type: client_credentials
 
         provider:
