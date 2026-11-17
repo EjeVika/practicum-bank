@@ -12,6 +12,12 @@ services:
       - "15432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${ACCOUNTS_DB_USER} -d ${ACCOUNTS_DB_NAME}" ]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 10s
 
   # Zookeeper (Service Discovery)
   zookeeper:
@@ -51,7 +57,14 @@ services:
     ports:
       - "${CONFIG_SERVER_PORT}:${CONFIG_SERVER_PORT}"
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:${CONFIG_SERVER_PORT}/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   # Accounts Service
   accounts-service:
@@ -77,11 +90,16 @@ services:
     ports:
       - "${ACCOUNTS_SERVICE_PORT}:${ACCOUNTS_SERVICE_PORT}"
     depends_on:
-      - accounts-db
-      - bank-config-server
-      - keycloak
-      - zookeeper
-      - notifications-service
+      accounts-db:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+      zookeeper:
+        condition: service_started
+      bank-config-server:
+        condition: service_healthy
+      notifications-service:
+        condition: service_started
 
   # Cash Service
   cash-service:
@@ -102,11 +120,16 @@ services:
     ports:
       - "${CASH_SERVICE_PORT}:${CASH_SERVICE_PORT}"
     depends_on:
-      - keycloak
-      - zookeeper
-      - bank-config-server
-      - notifications-service
-      - accounts-service
+      keycloak:
+        condition: service_started
+      zookeeper:
+        condition: service_started
+      bank-config-server:
+        condition: service_healthy
+      notifications-service:
+        condition: service_started
+      accounts-service:
+        condition: service_started
 
   # Transfer Service
   transfer-service:
@@ -127,11 +150,16 @@ services:
     ports:
       - "${TRANSFER_SERVICE_PORT}:${TRANSFER_SERVICE_PORT}"
     depends_on:
-      - keycloak
-      - zookeeper
-      - bank-config-server
-      - notifications-service
-      - accounts-service
+      keycloak:
+        condition: service_started
+      zookeeper:
+        condition: service_started
+      bank-config-server:
+        condition: service_healthy
+      notifications-service:
+        condition: service_started
+      accounts-service:
+        condition: service_started
 
   # Notification Service
   notifications-service:
@@ -149,9 +177,12 @@ services:
     ports:
       - "${NOTIFICATIONS_SERVICE_PORT}:${NOTIFICATIONS_SERVICE_PORT}"
     depends_on:
-      - keycloak
-      - zookeeper
-      - bank-config-server
+      keycloak:
+        condition: service_started
+      zookeeper:
+        condition: service_started
+      bank-config-server:
+        condition: service_healthy
 
   # Gateway
   bank-gateway:
@@ -169,13 +200,20 @@ services:
     ports:
       - "${BANK_GATEWAY_PORT}:${BANK_GATEWAY_PORT}"
     depends_on:
-      - keycloak
-      - zookeeper
-      - bank-config-server
-      - accounts-service
-      - cash-service
-      - transfer-service
-      - notifications-service
+      keycloak:
+        condition: service_started
+      zookeeper:
+        condition: service_started
+      bank-config-server:
+        condition: service_healthy
+      notifications-service:
+        condition: service_started
+      accounts-service:
+        condition: service_started
+      transfer-service:
+        condition: service_started
+      cash-service:
+        condition: service_started
 
   # UI
   bank-ui:
@@ -196,14 +234,22 @@ services:
     ports:
       - "${BANK_UI_PORT}:${BANK_UI_PORT}"
     depends_on:
-      - keycloak
-      - zookeeper
-      - bank-config-server
-      - accounts-service
-      - cash-service
-      - transfer-service
-      - notifications-service
-      - bank-gateway
+      keycloak:
+        condition: service_started
+      zookeeper:
+        condition: service_started
+      bank-config-server:
+        condition: service_healthy
+      notifications-service:
+        condition: service_started
+      accounts-service:
+        condition: service_started
+      transfer-service:
+        condition: service_started
+      cash-service:
+        condition: service_started
+      bank-gateway:
+        condition: service_started
 
 volumes:
   db-data:
