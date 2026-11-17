@@ -5,42 +5,11 @@ spring:
   application:
     name: transfer-service
 
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8080}/realms/${KEYCLOAK_REALM:bank-realm}
-
-      client:
-        registration:
-          transfer-service:
-            provider: keycloak
-            client-id: transfer-service
-            client-secret: ${TRANSFER_SERVICE_CLIENT_SECRET:transfer-service-secret-123}
-            authorization-grant-type: client_credentials
-
-        provider:
-          keycloak:
-            issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8080}/realms/${KEYCLOAK_REALM:bank-realm}
+  config:
+    import: configserver:http://${CONFIG_SERVER_HOST:localhost}:${CONFIG_SERVER_PORT:8888}
 
   cloud:
-    config:
-      enabled: false
-
     zookeeper:
       connect-string: ${ZOOKEEPER_HOST:localhost}:${ZOOKEEPER_PORT:2181}
       discovery:
         enabled: true
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info
-  endpoint:
-    health:
-      show-details: always
-
-bank:
-  gateway:
-    base-url: http://${BANK_GATEWAY_HOST:localhost}:${BANK_GATEWAY_PORT:8082}

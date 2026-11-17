@@ -28,6 +28,7 @@ services:
     environment:
       ZOO_MY_ID: 1
       ZOO_TICK_TIME: 2000
+
   # выдает права на volume для keycloak, который нужен чтобы не настраивать пользователей каждый раз
   keycloak-init:
     image: alpine:latest
@@ -36,6 +37,7 @@ services:
       - keycloak-data:/data
     command: chown -R 1000:1000 /data
     restart: "no"
+
   # Keycloak (Сервер авторизации)
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.5
@@ -125,6 +127,8 @@ services:
       ZOOKEEPER_PORT: 2181
       BANK_GATEWAY_HOST: bank-gateway
       BANK_GATEWAY_PORT: ${BANK_GATEWAY_PORT}
+      CONFIG_SERVER_HOST: bank-config-server
+      CONFIG_SERVER_PORT: ${CONFIG_SERVER_PORT}
     restart: on-failure
     ports:
       - "${CASH_SERVICE_PORT}:${CASH_SERVICE_PORT}"
@@ -155,6 +159,8 @@ services:
       ZOOKEEPER_PORT: 2181
       BANK_GATEWAY_HOST: bank-gateway
       BANK_GATEWAY_PORT: ${BANK_GATEWAY_PORT}
+      CONFIG_SERVER_HOST: bank-config-server
+      CONFIG_SERVER_PORT: ${CONFIG_SERVER_PORT}
     restart: on-failure
     ports:
       - "${TRANSFER_SERVICE_PORT}:${TRANSFER_SERVICE_PORT}"
@@ -182,6 +188,8 @@ services:
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
       ZOOKEEPER_HOST: zookeeper
       ZOOKEEPER_PORT: 2181
+      CONFIG_SERVER_HOST: bank-config-server
+      CONFIG_SERVER_PORT: ${CONFIG_SERVER_PORT}
     restart: on-failure
     ports:
       - "${NOTIFICATIONS_SERVICE_PORT}:${NOTIFICATIONS_SERVICE_PORT}"
