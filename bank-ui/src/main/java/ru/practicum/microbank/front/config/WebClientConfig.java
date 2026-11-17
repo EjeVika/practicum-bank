@@ -1,7 +1,6 @@
 package ru.practicum.microbank.front.config;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.Authentication;
@@ -27,12 +26,12 @@ public class WebClientConfig {
     }
 
     @Bean
-    @LoadBalanced
     public WebClient.Builder gatewayWebClientBuilder() {
         return WebClient.builder()
                 .baseUrl(gatewayBaseUrl)
                 .filter(addAccessTokenHeader());
     }
+
     @Bean
     public WebClient gatewayWebClient() {
         return gatewayWebClientBuilder()

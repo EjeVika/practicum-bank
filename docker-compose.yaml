@@ -198,6 +198,8 @@ services:
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
       ZOOKEEPER_HOST: zookeeper
       ZOOKEEPER_PORT: 2181
+      CONFIG_SERVER_HOST: bank-config-server
+      CONFIG_SERVER_PORT: ${CONFIG_SERVER_PORT}
     restart: on-failure
     ports:
       - "${BANK_GATEWAY_PORT}:${BANK_GATEWAY_PORT}"
@@ -232,6 +234,8 @@ services:
       ZOOKEEPER_PORT: 2181
       CONFIG_SERVER_HOST: bank-config-server
       CONFIG_SERVER_PORT: ${CONFIG_SERVER_PORT}
+      BANK_GATEWAY_HOST: bank-gateway
+      BANK_GATEWAY_PORT: ${BANK_GATEWAY_PORT}
     restart: on-failure
     ports:
       - "${BANK_UI_PORT}:${BANK_UI_PORT}"
