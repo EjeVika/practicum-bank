@@ -1,0 +1,210 @@
+services:
+
+  # PostgreSQL для accounts-service
+  accounts-db:
+    image: postgres:17.5
+    environment:
+      POSTGRES_DB: ${ACCOUNTS_DB_NAME}
+      POSTGRES_USER: ${ACCOUNTS_DB_USER}
+      POSTGRES_PASSWORD: ${ACCOUNTS_DB_PASSWORD}
+    restart: unless-stopped
+    ports:
+      - "15432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  # Zookeeper (Service Discovery)
+  zookeeper:
+    image: zookeeper:3.8.8
+    restart: unless-stopped
+    ports:
+      - "2181:2181"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_TICK_TIME: 2000
+
+  # Keycloak (Сервер авторизации)
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.5
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HTTP_PORT: 8080
+    restart: unless-stopped
+    ports:
+      - "${KEYCLOAK_PORT}:8080"
+    volumes:
+      - ./bank-keycloak/realm-export.json:/opt/keycloak/data/import/realm.json
+      - keycloak-data:/opt/keycloak/data/h2
+
+  # Bank Config Server
+  bank-config-server:
+    build:
+      context: ./bank-config-server
+      dockerfile: Dockerfile
+    environment:
+      SERVER_PORT: ${CONFIG_SERVER_PORT}
+      ZOOKEEPER_HOST: zookeeper
+      ZOOKEEPER_PORT: 2181
+    restart: on-failure
+    ports:
+      - "${CONFIG_SERVER_PORT}:${CONFIG_SERVER_PORT}"
+    depends_on:
+      - zookeeper
+
+  # Accounts Service
+  accounts-service:
+    build:
+      context: ./accounts-service
+      dockerfile: Dockerfile
+    environment:
+      ACCOUNTS_SERVICE_PORT: ${ACCOUNTS_SERVICE_PORT}
+      ACCOUNTS_DB_HOST: accounts-db
+      ACCOUNTS_DB_PORT: 5432
+      ACCOUNTS_DB_NAME: ${ACCOUNTS_DB_NAME}
+      ACCOUNTS_DB_USER: ${ACCOUNTS_DB_USER}
+      ACCOUNTS_DB_PASSWORD: ${ACCOUNTS_DB_PASSWORD}
+      KEYCLOAK_HOST: keycloak
+      KEYCLOAK_PORT: 8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      ACCOUNTS_SERVICE_CLIENT_SECRET: ${ACCOUNTS_SERVICE_CLIENT_SECRET}
+      ZOOKEEPER_HOST: zookeeper
+      ZOOKEEPER_PORT: 2181
+      BANK_GATEWAY_HOST: bank-gateway
+      BANK_GATEWAY_PORT: ${BANK_GATEWAY_PORT}
+    restart: on-failure
+    ports:
+      - "${ACCOUNTS_SERVICE_PORT}:${ACCOUNTS_SERVICE_PORT}"
+    depends_on:
+      - accounts-db
+      - bank-config-server
+      - keycloak
+      - zookeeper
+      - notifications-service
+
+  # Cash Service
+  cash-service:
+    build:
+      context: ./cash-service
+      dockerfile: Dockerfile
+    environment:
+      CASH_SERVICE_PORT: ${CASH_SERVICE_PORT}
+      KEYCLOAK_HOST: keycloak
+      KEYCLOAK_PORT: 8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      CASH_SERVICE_CLIENT_SECRET: ${CASH_SERVICE_CLIENT_SECRET}
+      ZOOKEEPER_HOST: zookeeper
+      ZOOKEEPER_PORT: 2181
+      BANK_GATEWAY_HOST: bank-gateway
+      BANK_GATEWAY_PORT: ${BANK_GATEWAY_PORT}
+    restart: on-failure
+    ports:
+      - "${CASH_SERVICE_PORT}:${CASH_SERVICE_PORT}"
+    depends_on:
+      - keycloak
+      - zookeeper
+      - bank-config-server
+      - notifications-service
+      - accounts-service
+
+  # Transfer Service
+  transfer-service:
+    build:
+      context: ./transfer-service
+      dockerfile: Dockerfile
+    environment:
+      TRANSFER_SERVICE_PORT: ${TRANSFER_SERVICE_PORT}
+      KEYCLOAK_HOST: keycloak
+      KEYCLOAK_PORT: 8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      TRANSFER_SERVICE_CLIENT_SECRET: ${TRANSFER_SERVICE_CLIENT_SECRET}
+      ZOOKEEPER_HOST: zookeeper
+      ZOOKEEPER_PORT: 2181
+      BANK_GATEWAY_HOST: bank-gateway
+      BANK_GATEWAY_PORT: ${BANK_GATEWAY_PORT}
+    restart: on-failure
+    ports:
+      - "${TRANSFER_SERVICE_PORT}:${TRANSFER_SERVICE_PORT}"
+    depends_on:
+      - keycloak
+      - zookeeper
+      - bank-config-server
+      - notifications-service
+      - accounts-service
+
+  # Notification Service
+  notifications-service:
+    build:
+      context: ./notifications-service
+      dockerfile: Dockerfile
+    environment:
+      NOTIFICATIONS_SERVER_PORT: ${NOTIFICATIONS_SERVICE_PORT}
+      KEYCLOAK_HOST: keycloak
+      KEYCLOAK_PORT: 8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      ZOOKEEPER_HOST: zookeeper
+      ZOOKEEPER_PORT: 2181
+    restart: on-failure
+    ports:
+      - "${NOTIFICATIONS_SERVICE_PORT}:${NOTIFICATIONS_SERVICE_PORT}"
+    depends_on:
+      - keycloak
+      - zookeeper
+      - bank-config-server
+
+  # Gateway
+  bank-gateway:
+    build:
+      context: ./bank-gateway
+      dockerfile: Dockerfile
+    environment:
+      BANK_GATEWAY_PORT: ${BANK_GATEWAY_PORT}
+      KEYCLOAK_HOST: keycloak
+      KEYCLOAK_PORT: 8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      ZOOKEEPER_HOST: zookeeper
+      ZOOKEEPER_PORT: 2181
+    restart: on-failure
+    ports:
+      - "${BANK_GATEWAY_PORT}:${BANK_GATEWAY_PORT}"
+    depends_on:
+      - keycloak
+      - zookeeper
+      - bank-config-server
+      - accounts-service
+      - cash-service
+      - transfer-service
+      - notifications-service
+
+  # UI
+  bank-ui:
+    build:
+      context: ./bank-ui
+      dockerfile: Dockerfile
+    environment:
+      BANK_UI_PORT: ${BANK_UI_PORT}
+      KEYCLOAK_HOST: keycloak
+      KEYCLOAK_PORT: 8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      UI_CLIENT_SECRET: ${UI_CLIENT_SECRET}
+      ZOOKEEPER_HOST: zookeeper
+      ZOOKEEPER_PORT: 2181
+      CONFIG_SERVER_HOST: bank-config-server
+      CONFIG_SERVER_PORT: ${CONFIG_SERVER_PORT}
+    restart: on-failure
+    ports:
+      - "${BANK_UI_PORT}:${BANK_UI_PORT}"
+    depends_on:
+      - keycloak
+      - zookeeper
+      - bank-config-server
+      - accounts-service
+      - cash-service
+      - transfer-service
+      - notifications-service
+      - bank-gateway
+
+volumes:
+  db-data:
+  keycloak-data:
