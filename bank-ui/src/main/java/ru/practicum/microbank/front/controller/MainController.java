@@ -99,9 +99,11 @@ public class MainController {
             model.addAttribute("sum", String.valueOf(0));
             model.addAttribute("info", "Создан новый счет. Заполните персональные данные");
         } catch (Exception e) {
-            log.warn("Не удалось загрузить данные аккаунта при восстановлении модели", e);
+            String errorMessage = "Не удалось загрузить данные аккаунта при восстановлении модели";
+            log.warn(errorMessage, e);
             model.addAttribute("name", oidcUser.getFullName());
             model.addAttribute("sum", "0");
+            model.addAttribute("errors", errorMessage);
         }
         populateAccountsList(model, login);
     }
