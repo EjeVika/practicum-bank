@@ -86,6 +86,8 @@ services:
       ZOOKEEPER_PORT: 2181
       BANK_GATEWAY_HOST: bank-gateway
       BANK_GATEWAY_PORT: ${BANK_GATEWAY_PORT}
+      CONFIG_SERVER_HOST: bank-config-server
+      CONFIG_SERVER_PORT: ${CONFIG_SERVER_PORT}
     restart: on-failure
     ports:
       - "${ACCOUNTS_SERVICE_PORT}:${ACCOUNTS_SERVICE_PORT}"
