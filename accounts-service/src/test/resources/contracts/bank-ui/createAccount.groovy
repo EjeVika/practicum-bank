@@ -5,7 +5,7 @@ Contract.make {
     description "Создать нового пользователя и счет"
     request {
         method POST()
-        url $(consumer('/api/v1/accounts/ivanov'), producer('/accounts/ivanov'))
+        url $(consumer('/api/v1/accounts'), producer('/accounts'))
         headers {
             contentType(applicationJson())
             header 'Authorization', value(

@@ -62,7 +62,7 @@ public class AccountsClient {
     public AccountInfo createAccount(AccountInfoShort accountInfoShort) {
         return gatewayWebClient
                 .post()
-                .uri("/api/v1/accounts/{login}", accountInfoShort.login())
+                .uri("/api/v1/accounts")
                 .bodyValue(accountInfoShort)
                 .retrieve()
                 .bodyToMono(AccountInfo.class)

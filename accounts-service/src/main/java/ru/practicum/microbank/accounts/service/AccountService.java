@@ -41,8 +41,8 @@ public class AccountService {
     }
 
     @Transactional
-    public AccountInfo createAccountAndUser(String login, AccountInfoShort accountInfoShort) {
-        Preconditions.checkArgument(Strings.isNotBlank(login), "Логин пуст");
+    public AccountInfo createAccountAndUser(AccountInfoShort accountInfoShort) {
+        Preconditions.checkArgument(Strings.isNotBlank(accountInfoShort.login()), "Логин пуст");
         AccountInfo existedAccount = null;
         try {
             existedAccount = findByLogin(accountInfoShort.login());

@@ -38,14 +38,14 @@ public class AccountsController {
         return accountService.getAccountInfoShorts();
     }
 
-    @PostMapping("/accounts/{login}")
+    @PostMapping("/accounts")
     @PreAuthorize("hasRole('USER') && hasAuthority('accounts.access')")
-    public AccountInfo createAccount(@PathVariable("login") String login, @RequestBody AccountInfoShort request) {
+    public AccountInfo createAccount(@RequestBody AccountInfoShort request) {
         log.trace("Создать счет и пользователя");
-        AccountInfo accountInfo = accountService.createAccountAndUser(login, request);
+        AccountInfo accountInfo = accountService.createAccountAndUser(request);
         notificationsClient.sendNotification(new NotificationRequest(
                 "ACCOUNT_CREATED",
-                String.format("Создан счет для пользователя %s(%s). Баланс 0 рублей", request.name(), login)
+                String.format("Создан счет для пользователя %s(%s). Баланс 0 рублей", request.name(), request.login())
         ));
         return accountInfo;
     }

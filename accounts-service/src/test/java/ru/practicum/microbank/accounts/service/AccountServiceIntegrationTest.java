@@ -35,7 +35,6 @@ class AccountServiceIntegrationTest extends AbstractIntegrationTest {
     @DisplayName("Должен создавать нового пользователя и счет с нулевым балансом")
     void createAccountAndUser_ShouldCreateNewAccount() {
         var result = accountService.createAccountAndUser(
-                "new-user",
                 new AccountInfoShort("new-user", "Новый Пользователь")
         );
 
@@ -47,9 +46,9 @@ class AccountServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Не должен создавать дубликат, если логин уже занят")
     void createAccountAndUser_WhenLoginExists_ShouldReturnExisting() {
-        accountService.createAccountAndUser("existing", new AccountInfoShort("existing", "Уже Существующий"));
+        accountService.createAccountAndUser(new AccountInfoShort("existing", "Уже Существующий"));
 
-        var result = accountService.createAccountAndUser("existing", new AccountInfoShort("existing", "Другое Имя"));
+        var result = accountService.createAccountAndUser(new AccountInfoShort("existing", "Другое Имя"));
 
         assertThat(result.login()).isEqualTo("existing");
         assertThat(result.name()).isEqualTo("Уже Существующий"); // имя не изменилось
@@ -58,7 +57,7 @@ class AccountServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Должен успешно снимать деньги при достаточном балансе")
     void updateBalance_WhenWithdrawWithSufficientFunds_ShouldSucceed() {
-        accountService.createAccountAndUser("user1", new AccountInfoShort("user1", "User One"));
+        accountService.createAccountAndUser(new AccountInfoShort("user1", "User One"));
         accountService.updateBalance("user1", new UpdateBalanceRequest(new BigDecimal("1000.00"), CashAction.PUT));
 
         UpdateBalanceResponse response = accountService.updateBalance(
@@ -73,7 +72,7 @@ class AccountServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Должен выбрасывать LowBalanceException при попытке снять больше, чем есть")
     void updateBalance_WhenInsufficientFunds_ShouldThrowException() {
-        accountService.createAccountAndUser("poor-user", new AccountInfoShort("poor-user", "Просто Бедный"));
+        accountService.createAccountAndUser(new AccountInfoShort("poor-user", "Просто Бедный"));
         accountService.updateBalance("poor-user", new UpdateBalanceRequest(new BigDecimal("100.00"), CashAction.PUT));
 
         assertThatThrownBy(() ->

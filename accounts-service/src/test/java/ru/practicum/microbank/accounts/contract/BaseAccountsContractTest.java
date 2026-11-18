@@ -51,8 +51,7 @@ public abstract class BaseAccountsContractTest {
                 new AccountInfoShort("ivanov", "Иван Иванов"),
                 new AccountInfoShort("petrov", "Петр Петров")));
 
-        when(accountService.createAccountAndUser("ivanov",
-                new AccountInfoShort("ivanov", "Иван Иванов")))
+        when(accountService.createAccountAndUser(new AccountInfoShort("ivanov", "Иван Иванов")))
                 .thenReturn(new AccountInfo("ivanov", "Иван Иванов", null, BigDecimal.ZERO));
 
         when(accountService.updateAccount("ivanov",
