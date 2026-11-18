@@ -29,8 +29,8 @@ class NameUtilsTest {
 
     @Test
     @DisplayName("extractFirstName должен корректно обрабатывать строку с одним словом и лишними пробелами")
-    void extractFirstName_WithSingleWordAndSpaces_ShouldReturnTrimmedWord() {
-        assertThat(NameUtils.extractFirstName("  Иванов  ")).isEqualTo("Иванов");
+    void extractFirstName_WithSingleWordAndSpaces_ShouldReturnNull() {
+        assertThat(NameUtils.extractFirstName(" Иванов  ")).isNull();
     }
 
     // ==========================================
@@ -45,9 +45,9 @@ class NameUtilsTest {
     }
 
     @Test
-    @DisplayName("extractLastName должен возвращать null, если в строке только одно слово")
-    void extractLastName_WithSingleWord_ShouldReturnNull() {
-        assertThat(NameUtils.extractLastName("Иванов")).isNull();
+    @DisplayName("extractLastName должен корректно обрабатывать строку с одним словом и лишними пробелами")
+    void extractLastName_WithSingleWord_ShouldReturnName() {
+        assertThat(NameUtils.extractLastName(" Иванов  ")).isEqualTo("Иванов");
     }
 
     @Test

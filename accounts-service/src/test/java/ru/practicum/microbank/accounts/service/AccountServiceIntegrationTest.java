@@ -44,6 +44,19 @@ class AccountServiceIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @DisplayName("Должен создавать нового пользователя если в имени нет пробелов")
+    void createAccountAndUser_NameWithoutSpace() {
+        var result = accountService.createAccountAndUser(
+                new AccountInfoShort("new-user", "Пользователь")
+        );
+
+        assertThat(result).isNotNull();
+        assertThat(result.login()).isEqualTo("new-user");
+        assertThat(result.name()).isEqualTo("Пользователь");
+        assertThat(result.balance()).isEqualByComparingTo(BigDecimal.ZERO);
+    }
+
+    @Test
     @DisplayName("Не должен создавать дубликат, если логин уже занят")
     void createAccountAndUser_WhenLoginExists_ShouldReturnExisting() {
         accountService.createAccountAndUser(new AccountInfoShort("existing", "Уже Существующий"));

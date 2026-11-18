@@ -5,14 +5,19 @@ import ru.practicum.microbank.accounts.model.User;
 
 public class NameUtils {
     public static String extractFirstName(String name) {
-        if (name == null || name.isBlank()) return null;
-        return name.trim().split("\\s+", 2)[0];
+        if (name == null || name.isBlank()) {
+            return null;
+        }
+        String[] parts = name.trim().split("\\s+", 2);
+        return parts.length > 1 ? parts[0] : null;
     }
 
     public static String extractLastName(String name) {
-        if (name == null || name.isBlank()) return null;
+        if (name == null || name.isBlank()) {
+            return null;
+        }
         String[] parts = name.trim().split("\\s+", 2);
-        return parts.length > 1 ? parts[1] : null;
+        return parts.length > 1 ? parts[1] : parts[0];
     }
 
     public static String combineName(User user) {

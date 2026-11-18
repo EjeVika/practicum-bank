@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     login VARCHAR(64) NOT NULL UNIQUE,
     first_name VARCHAR(64),
-    last_name VARCHAR(64),
+    last_name VARCHAR(64) NOT NULL,
     birthday DATE
 );
 
