@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.microbank.accounts.client.NotificationsClient;
 import ru.practicum.microbank.accounts.dto.*;
 import ru.practicum.microbank.accounts.exception.AccountNotFoundException;
+import ru.practicum.microbank.accounts.exception.LowBalanceException;
 import ru.practicum.microbank.accounts.service.AccountService;
 
 import java.math.BigDecimal;
@@ -36,7 +37,7 @@ public abstract class BaseAccountsContractTest {
     @BeforeEach
     void setup() {
         RestAssuredMockMvc.mockMvc(mockMvc);
-
+        // mocks for bank-ui
         when(accountService.findByLogin("ivanov"))
                 .thenReturn(new AccountInfo(
                         "ivanov",
@@ -62,6 +63,34 @@ public abstract class BaseAccountsContractTest {
         when(accountService.updateAccount("petrov",
                 new UpdateAccountRequest("Иван Иванов", LocalDate.of(1990, 1, 15))))
                 .thenThrow(new AccountNotFoundException("petrov"));
+        // mocks for cash-service
+        when(accountService.updateBalance("ivanov",
+                new UpdateBalanceRequest(BigDecimal.valueOf(1005,1), CashAction.PUT)))
+                .thenReturn(new UpdateBalanceResponse(
+                        "ivanov",
+                        BigDecimal.valueOf(2005,1),
+                        BigDecimal.valueOf(1005,1),
+                        CashAction.PUT,
+                        "На счет успешно положено 100.5 рублей"
+                        ));
+
+        when(accountService.updateBalance("petrov",
+                new UpdateBalanceRequest(BigDecimal.valueOf(1005,1), CashAction.PUT)))
+                .thenThrow(new AccountNotFoundException("petrov"));
+
+        when(accountService.updateBalance("sidorov",
+                new UpdateBalanceRequest(BigDecimal.valueOf(1005,1), CashAction.GET)))
+                .thenReturn(new UpdateBalanceResponse(
+                        "sidorov",
+                        BigDecimal.valueOf(200),
+                        BigDecimal.valueOf(1005,1),
+                        CashAction.GET,
+                        "На счет успешно положено 100.5 рублей"
+                ));
+
+        when(accountService.updateBalance("fedorov",
+                new UpdateBalanceRequest(BigDecimal.valueOf(1005,1), CashAction.GET)))
+                .thenThrow(new LowBalanceException("fedorov"));
 
 
         when(notificationsClient.sendNotification(mock(NotificationRequest.class)))

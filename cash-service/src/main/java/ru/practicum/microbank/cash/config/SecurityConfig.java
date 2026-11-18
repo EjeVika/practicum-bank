@@ -57,10 +57,8 @@ public class SecurityConfig {
 
     /**
      * Извлекаем роли из realm_access.roles:
-     * - преобразуем "ACCOUNTS_ACCESS" -> ROLE_ACCOUNTS_ACCESS (для hasRole)
-     * - преобразуем "NOTIFICATIONS_ACCESS" -> ROLE_NOTIFICATIONS_ACCESS (для hasRole)
-     * - добавляем authority "accounts.access" (для hasAuthority)
-     * - добавляем authority "notifications.access" (для hasAuthority)
+     * - преобразуем "CASH_ACCESS" -> ROLE_CASH_ACCESS (для hasRole)
+     * - добавляем authority "cash.access" (для hasAuthority)
      */
     private Collection<GrantedAuthority> extractAuthoritiesFromRealmAccess(Jwt jwt) {
 
