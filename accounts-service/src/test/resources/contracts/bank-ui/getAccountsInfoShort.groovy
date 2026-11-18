@@ -1,10 +1,11 @@
 import org.springframework.cloud.contract.spec.Contract
 
 Contract.make {
-    description "Get account by login"
+    name("Get accounts info short")
+    description "Вывести краткую информацию о пользователях системы"
     request {
         method GET()
-        url $(consumer('/api/v1/accounts/ivanov'), producer('/accounts/ivanov'))
+        url $(consumer('/api/v1/accounts'), producer('/accounts'))
         headers {
             header 'Authorization', value(
                     // Для консьюмера (WireMock): любой Bearer-токен
@@ -20,12 +21,16 @@ Contract.make {
             contentType(applicationJson())
         }
         body '''
-        {
-            "login": "ivanov",
-            "name": "Иван Иванов",
-            "birthday": "1990-01-15",
-            "balance": 1500.50
-        }
-        '''
+            [
+                {
+                    "login": "ivanov",
+                    "name": "Иван Иванов"
+                },
+                {
+                    "login": "petrov",
+                    "name": "Петр Петров"
+                }
+            ]
+            '''
     }
 }
