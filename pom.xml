@@ -30,6 +30,7 @@
         <spring-cloud.version>2025.1.4</spring-cloud.version>
         <lombok.version>1.18.48</lombok.version>
         <testcontainers.version>2.0.5</testcontainers.version>
+        <spring-cloud-contract.version>5.0.3</spring-cloud-contract.version>
     </properties>
 
     <!-- Управление версиями зависимостей (BOM) -->
@@ -53,6 +54,13 @@
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers-bom</artifactId>
                 <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-contract-verifier</artifactId>
+                <version>${spring-cloud-contract.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
