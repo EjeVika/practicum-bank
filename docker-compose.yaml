@@ -49,6 +49,9 @@ services:
     restart: unless-stopped
     ports:
       - "${KEYCLOAK_PORT}:8080"
+    depends_on:
+      keycloak-init:
+        condition: service_completed_successfully
     volumes:
       - ./bank-keycloak/realm-export.json:/opt/keycloak/data/import/realm.json
       - keycloak-data:/opt/keycloak/data/h2
