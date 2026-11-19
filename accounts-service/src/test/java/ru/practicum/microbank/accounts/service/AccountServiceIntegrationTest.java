@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.jdbc.JdbcTestUtils;
 import ru.practicum.microbank.accounts.AbstractIntegrationTest;
 import ru.practicum.microbank.accounts.dto.AccountInfoShort;
 import ru.practicum.microbank.accounts.dto.CashAction;
@@ -21,6 +23,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class AccountServiceIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
     private AccountService accountService;
 
     @Autowired
@@ -28,7 +33,7 @@ class AccountServiceIntegrationTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        accountRepository.deleteAll();
+        JdbcTestUtils.deleteFromTables(jdbcTemplate, "accounts", "users");
     }
 
     @Test
