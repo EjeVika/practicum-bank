@@ -56,7 +56,7 @@ public class AccountsServiceContractTest {
     void failToGetAccountFromStub() {
         try {
             accountsClient.getAccountInfo("petrov");
-            assertThat(false);
+            assertThat(true).as("Ожидается исключение, а его не произошло").isFalse();
         } catch (AccountNotFoundException e) {
             assertThat(e.getMessage()).isEqualTo("Не найден счет для пользователя: petrov");
         }
@@ -96,7 +96,7 @@ public class AccountsServiceContractTest {
         try {
             accountsClient.editAccount("petrov",
                     new UpdateAccountRequest( "Иван Иванов", LocalDate.of(1990,1,15)));
-            assertThat(false);
+            assertThat(true).as("Ожидается исключение, а его не произошло").isFalse();
         } catch (AccountNotFoundException e) {
             assertThat(e.getMessage()).isEqualTo("Не найден счет для пользователя: petrov");
         } catch (Exception e) {
