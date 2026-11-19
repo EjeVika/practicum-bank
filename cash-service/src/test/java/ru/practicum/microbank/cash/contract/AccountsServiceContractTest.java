@@ -59,7 +59,7 @@ public class AccountsServiceContractTest {
         try {
             accountsClient.updateBalance("petrov",
                     new UpdateBalanceRequest(BigDecimal.valueOf(1005,1), CashAction.PUT));
-            assertThat(false);
+            assertThat(true).as("Ожидается исключение, а его не произошло").isFalse();
         } catch (DownstreamAccountException e) {
 
             assertThat(assertThat(e.getMessage()).contains("Ошибка от accounts-service: 404"));
@@ -85,7 +85,7 @@ public class AccountsServiceContractTest {
         try {
             accountsClient.updateBalance("fedorov",
                     new UpdateBalanceRequest(BigDecimal.valueOf(1005,1), CashAction.GET));
-            assertThat(false);
+            assertThat(true).as("Ожидается исключение, а его не произошло").isFalse();
         } catch (DownstreamAccountException e) {
 
             assertThat(assertThat(e.getMessage()).contains("Ошибка от accounts-service: 409"));
