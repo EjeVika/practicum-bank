@@ -43,7 +43,7 @@
   ``` 
 4. Запускаем Keycloak для настройки
   ```bash
-  sudo docker compose up --no-deps -d keycloak
+  sudo docker compose up keycloak
   ```  
 5. Настраиваем Keycloak http://localhost:8080 (admin/admin)
     - Идем в пространство bank-realm
