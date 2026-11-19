@@ -1,0 +1,31 @@
+spring:
+  # Отключаем Config Server для тестов
+  config:
+    import: "optional:configserver:" # пустой импорт = не идем на config server
+
+  # Отключаем Cloud-компоненты
+  cloud:
+    zookeeper:
+      enabled: false
+      discovery:
+        enabled: false
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/test
+      client:
+        registration:
+          test-client:
+            client-id: test-client
+            client-secret: test-secret
+            authorization-grant-type: client_credentials
+            provider: test-provider
+        provider:
+          test-provider:
+            token-uri: http://localhost:9999/oauth/token
+
+bank:
+  gateway:
+    base-url: http://${BANK_GATEWAY_HOST:localhost}:${BANK_GATEWAY_PORT:8082}
