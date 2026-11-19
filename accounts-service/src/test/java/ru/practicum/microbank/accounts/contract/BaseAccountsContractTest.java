@@ -21,7 +21,12 @@ import java.util.List;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@SpringBootTest(    properties = {
+        "spring.autoconfigure.exclude=" +
+                "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration," +
+                "org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration," +
+                "org.springframework.boot.data.jpa.autoconfigure.JpaRepositoriesAutoConfiguration"
+})
 @AutoConfigureMockMvc
 @ActiveProfiles("contract-test")
 public abstract class BaseAccountsContractTest {
@@ -64,33 +69,57 @@ public abstract class BaseAccountsContractTest {
                 .thenThrow(new AccountNotFoundException("petrov"));
         // mocks for cash-service
         when(accountService.updateBalance("ivanov",
-                new UpdateBalanceRequest(BigDecimal.valueOf(1005,1), CashAction.PUT)))
+                new UpdateBalanceRequest(BigDecimal.valueOf(1005, 1), CashAction.PUT)))
                 .thenReturn(new UpdateBalanceResponse(
                         "ivanov",
-                        BigDecimal.valueOf(2005,1),
-                        BigDecimal.valueOf(1005,1),
+                        BigDecimal.valueOf(2005, 1),
+                        BigDecimal.valueOf(1005, 1),
                         CashAction.PUT,
                         "На счет успешно положено 100.5 рублей"
-                        ));
+                ));
 
         when(accountService.updateBalance("petrov",
-                new UpdateBalanceRequest(BigDecimal.valueOf(1005,1), CashAction.PUT)))
+                new UpdateBalanceRequest(BigDecimal.valueOf(1005, 1), CashAction.PUT)))
                 .thenThrow(new AccountNotFoundException("petrov"));
 
         when(accountService.updateBalance("sidorov",
-                new UpdateBalanceRequest(BigDecimal.valueOf(1005,1), CashAction.GET)))
+                new UpdateBalanceRequest(BigDecimal.valueOf(1005, 1), CashAction.GET)))
                 .thenReturn(new UpdateBalanceResponse(
                         "sidorov",
                         BigDecimal.valueOf(200),
-                        BigDecimal.valueOf(1005,1),
+                        BigDecimal.valueOf(1005, 1),
                         CashAction.GET,
                         "На счет успешно положено 100.5 рублей"
                 ));
 
         when(accountService.updateBalance("fedorov",
-                new UpdateBalanceRequest(BigDecimal.valueOf(1005,1), CashAction.GET)))
+                new UpdateBalanceRequest(BigDecimal.valueOf(1005, 1), CashAction.GET)))
                 .thenThrow(new LowBalanceException("fedorov"));
 
+        // mocks for transfer-service
+        when(accountService.transfer(new TransferRequest(
+                BigDecimal.valueOf(1005, 1),
+                "sidorov",
+                "ivanov")))
+                .thenReturn(new TransferResponse(
+                        BigDecimal.valueOf(1005, 1),
+                        "sidorov",
+                        BigDecimal.valueOf(2005, 1),
+                        "ivanov",
+                        BigDecimal.valueOf(100),
+                        "Переведено 100.5 рублей на счет sidorov"));
+
+        when(accountService.transfer(new TransferRequest(
+                BigDecimal.valueOf(1005, 1),
+                "petrov",
+                "ivanov")))
+                .thenThrow(new AccountNotFoundException("petrov"));
+
+        when(accountService.transfer(new TransferRequest(
+                BigDecimal.valueOf(10000),
+                "sidorov",
+                "ivanov")))
+                .thenThrow(new LowBalanceException("ivanov"));
 
         when(notificationsClient.sendNotification(mock(NotificationRequest.class)))
                 .thenReturn(mock(NotificationResponse.class));

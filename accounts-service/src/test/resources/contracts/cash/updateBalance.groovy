@@ -17,11 +17,11 @@ import org.springframework.cloud.contract.spec.Contract
                     )
                 }
                 body '''
-            {
-                "sum": "100.5",
-                "action": "PUT"
-           }
-           '''
+                    {
+                        "sum": "100.5",
+                        "action": "PUT"
+                   }
+                   '''
             }
             response {
                 status OK()
@@ -29,14 +29,14 @@ import org.springframework.cloud.contract.spec.Contract
                     contentType(applicationJson())
                 }
                 body '''
-            {
-                "login":"ivanov",
-                "resultBalance":200.5,
-                "sum":100.5,
-                "action":"PUT",
-                "message":"На счет успешно положено 100.5 рублей"
-            }
-            '''
+                    {
+                        "login":"ivanov",
+                        "resultBalance":200.5,
+                        "sum":100.5,
+                        "action":"PUT",
+                        "message":"На счет успешно положено 100.5 рублей"
+                    }
+                    '''
             }
         },
         Contract.make {
