@@ -1,0 +1,55 @@
+spring:
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Адрес issuer (Keycloak realm). Gateway по нему получает ключи
+          # и параметры токена, чтобы валидировать JWT от UI
+          issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8080}/realms/${KEYCLOAK_REALM:bank-realm}
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            # 1. Запросы от bank-ui к accounts-service
+            - id: accounts-service-ui
+              uri: lb://accounts-service
+              predicates:
+                - Path=/api/v1/accounts/**
+              filters:
+                - name: JwtTokenRelay
+                - StripPrefix=2
+            # 2. Запросы от bank-ui к cash-service
+            - id: cash-service-ui
+              uri: lb://cash-service
+              predicates:
+                - Path=/api/v1/cash/**
+              filters:
+                - name: JwtTokenRelay
+                - StripPrefix=2
+            # 3. Запросы от bank-ui к transfer-service
+            - id: transfer-service-ui
+              uri: lb://transfer-service
+              predicates:
+                - Path=/api/v1/transfer/**
+              filters:
+                - name: JwtTokenRelay
+                - StripPrefix=2
+            # 4. Внутренние запросы от любых сервисов к accounts-service
+            - id: accounts-service-internal
+              uri: lb://accounts-service
+              predicates:
+                - Path=/accounts/**
+              filters:
+            # 5. Внутренние запросы от любых сервисов к notifications-service
+            - id: notifications-service-internal
+              uri: lb://notifications-service
+              predicates:
+                - Path=/notify/**
+              filters:
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG

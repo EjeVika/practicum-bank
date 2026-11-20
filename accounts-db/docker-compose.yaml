@@ -1,0 +1,21 @@
+# имена и описания контейнеров, которые должны быть развёрнуты
+services:
+  # описание контейнера db
+  db:
+    container_name: accounts_db
+    # образ, из которого должен быть запущен контейнер
+    image: postgres:17.5
+    restart: always
+    ports:
+      - "15432:5432"
+    # переменные окружения
+    environment:
+      - POSTGRES_USER=accounts
+      - POSTGRES_PASSWORD=accounts
+      - POSTGRES_DB=accounts_db
+    # volume и связанная с ним директория в контейнере
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:

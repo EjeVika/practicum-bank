@@ -1,6 +1,9 @@
 # Compiled class file
 *.class
 
+# File with enviroment params
+.env
+
 # Log file
 *.log
 
@@ -22,3 +25,19 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Intellij Idea files
+.idea/
+
+# maven wrapper files
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# target in submodules
+bank-ui/target/*
+bank-gateway/target/*
+bank-config-server/target/*
+accounts-service/target/*
+cash-service/target/*
+transfer-service/target/*
+notifications-service/target/*

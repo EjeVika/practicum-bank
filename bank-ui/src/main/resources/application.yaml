@@ -1,0 +1,16 @@
+server:
+  port: ${BANK_UI_PORT:8081}
+
+spring:
+  application:
+    name: bank-ui
+
+  config:
+    import: optional:configserver:http://${CONFIG_SERVER_HOST:localhost}:${CONFIG_SERVER_PORT:8888}
+
+  cloud:
+    zookeeper:
+      connect-string: ${ZOOKEEPER_HOST:localhost}:${ZOOKEEPER_PORT:2181}
+      discovery:
+        enabled: true
+        register: false
